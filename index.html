@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>傻逼指数分析器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 500px;
+            padding: 30px;
+            text-align: center;
+            margin-top: auto;
+            margin-bottom: auto;
+        }
+        
+        h1 {
+            color: #ff4757;
+            margin-bottom: 20px;
+            font-size: 2.2rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .description {
+            color: #57606f;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+        
+        .input-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+        
+        input {
+            width: 70%;
+            padding: 12px 20px;
+            border: 2px solid #ddd;
+            border-radius: 50px;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s;
+        }
+        
+        input:focus {
+            border-color: #5352ed;
+            box-shadow: 0 0 10px rgba(83, 82, 237, 0.3);
+        }
+        
+        button {
+            background: linear-gradient(to right, #ff4757, #ff6348);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(255, 71, 87, 0.4);
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(255, 71, 87, 0.5);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .result {
+            display: none;
+            margin-top: 30px;
+            animation: fadeIn 1s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .score {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #ff4757;
+            margin: 15px 0;
+        }
+        
+        .progress-bar {
+            height: 20px;
+            background-color: #f1f2f6;
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background: linear-gradient(to right, #2ed573, #1e90ff);
+            border-radius: 10px;
+            width: 0%;
+            transition: width 1.5s ease-in-out;
+        }
+        
+        .comment {
+            font-style: italic;
+            margin: 15px 0;
+            color: #57606f;
+            min-height: 60px;
+            font-size: 1.1rem;
+        }
+        
+        .disclaimer {
+            margin-top: 30px;
+            font-size: 0.8rem;
+            color: #747d8c;
+        }
+        
+        .fun-element {
+            margin: 20px 0;
+            font-size: 3rem;
+            transition: transform 0.3s;
+        }
+        
+        .repeat-notice {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #57606f;
+            background-color: #f1f2f6;
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        .footer {
+            margin-top: auto;
+            padding-top: 20px;
+            color: #a0a0a0;
+            font-size: 0.9rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .footer a {
+            color: #a0a0a0;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>傻逼指数分析器</h1>
+        <p class="description">输入您的名字，我们将基于高级算法分析您的"傻逼指数"。相同的输入总是得到相同的结果！</p>
+        
+        <div class="input-group">
+            <input type="text" id="nameInput" placeholder="请输入您的名字">
+            <button onclick="analyze()">开始分析</button>
+        </div>
+        
+        <div class="result" id="result">
+            <div class="fun-element" id="funElement">🔍</div>
+            <h2>分析结果</h2>
+            <div class="score" id="score">0%</div>
+            <div class="progress-bar">
+                <div class="progress" id="progress"></div>
+            </div>
+            <p class="comment" id="comment">正在使用高级算法分析中...</p>
+            <div class="repeat-notice">✨ 提示：相同的名字总是得到相同的结果</div>
+        </div>
+        
+        <p class="disclaimer">免责声明：本分析器仅供娱乐，没有任何科学依据，请勿对号入座。</p>
+    </div>
+
+    <script>
+        // 简单哈希函数（不显示给用户）
+        function simpleHash(str) {
+            let hash = 0;
+            if (str.length === 0) return hash;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = (hash << 5) - hash + char;
+                hash |= 0; // 转换为32位整数
+            }
+            return Math.abs(hash);
+        }
+        
+        // 获取基于哈希的分数
+        function getScoreFromHash(name) {
+            const hash = simpleHash(name);
+            return hash % 101; // 返回0-100之间的值
+        }
+        
+        function analyze() {
+            // 获取输入的名字
+            const name = document.getElementById('nameInput').value.trim();
+            
+            // 如果没有输入名字
+            if (!name) {
+                alert('请输入您的名字！');
+                return;
+            }
+            
+            // 显示结果区域
+            const resultElement = document.getElementById('result');
+            resultElement.style.display = 'block';
+            
+            // 基于哈希值计算指数 (0-100)
+            const score = getScoreFromHash(name);
+            
+            // 更新进度条
+            const progressElement = document.getElementById('progress');
+            progressElement.style.width = '0%';
+            
+            // 更新分数和评语
+            const scoreElement = document.getElementById('score');
+            const commentElement = document.getElementById('comment');
+            const funElement = document.getElementById('funElement');
+            
+            scoreElement.textContent = '0%';
+            commentElement.textContent = '正在使用高级算法分析中...';
+            funElement.textContent = '🔍';
+            funElement.style.transform = 'scale(1)';
+            
+            // 添加动画效果
+            let currentScore = 0;
+            const interval = setInterval(() => {
+                currentScore++;
+                scoreElement.textContent = currentScore + '%';
+                progressElement.style.width = currentScore + '%';
+                
+                // 根据分数变化表情
+                if (currentScore < 20) {
+                    funElement.textContent = '😇';
+                } else if (currentScore < 40) {
+                    funElement.textContent = '😊';
+                } else if (currentScore < 60) {
+                    funElement.textContent = '😐';
+                } else if (currentScore < 80) {
+                    funElement.textContent = '😒';
+                } else {
+                    funElement.textContent = '🤪';
+                }
+                
+                // 添加一些动画效果
+                if (currentScore % 10 === 0) {
+                    funElement.style.transform = 'scale(1.2)';
+                    setTimeout(() => {
+                        funElement.style.transform = 'scale(1)';
+                    }, 150);
+                }
+                
+                if (currentScore >= score) {
+                    clearInterval(interval);
+                    
+                    // 根据最终分数设置评语
+                    if (score < 10) {
+                        commentElement.textContent = '天哪！您简直是圣人转世，傻逼指数几乎为零！';
+                    } else if (score < 20) {
+                        commentElement.textContent = '太优秀了！您的傻逼指数极低，堪称楷模！';
+                    } else if (score < 40) {
+                        commentElement.textContent = '不错哦！您的傻逼指数在正常范围内，继续保持！';
+                    } else if (score < 60) {
+                        commentElement.textContent = '嗯，您有着普通人的傻逼指数，生活需要一点乐趣！';
+                    } else if (score < 80) {
+                        commentElement.textContent = '警告！您的傻逼指数略高，请注意日常言行！';
+                    } else if (score < 90) {
+                        commentElement.textContent = '注意！您的傻逼指数较高，可能需要自我反思！';
+                    } else {
+                        commentElement.textContent = '天哪！您的傻逼指数爆表了！建议重新投胎！';
+                    }
+                    
+                    // 最终表情确定
+                    setTimeout(() => {
+                        if (score < 20) {
+                            funElement.textContent = '🎓';
+                        } else if (score < 40) {
+                            funElement.textContent = '👍';
+                        } else if (score < 60) {
+                            funElement.textContent = '😎';
+                        } else if (score < 80) {
+                            funElement.textContent = '🤔';
+                        } else {
+                            funElement.textContent = '💥';
+                        }
+                    }, 500);
+                }
+            }, 30);
+        }
+        
+        // 支持按回车键触发分析
+        document.getElementById('nameInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                analyze();
+            }
+        });
+        
+  
+        document.getElementById('nameInput').focus();
+    </script>
+    <footer class="footer">
+        <p>由 <a href="#">可爱大彩兔</a> 制作</p>
+    </footer>
+</body>
+</html>
