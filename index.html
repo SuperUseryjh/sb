@@ -13,6 +13,7 @@
         }
         
         body {
+            background: -webkit-linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
             background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
             min-height: 100vh;
             display: flex;
@@ -25,6 +26,7 @@
         .container {
             background-color: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
+            -webkit-box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             width: 90%;
             max-width: 500px;
@@ -59,15 +61,18 @@
             border-radius: 50px;
             font-size: 16px;
             outline: none;
+            -webkit-transition: all 0.3s;
             transition: all 0.3s;
         }
         
         input:focus {
             border-color: #5352ed;
+            -webkit-box-shadow: 0 0 10px rgba(83, 82, 237, 0.3);
             box-shadow: 0 0 10px rgba(83, 82, 237, 0.3);
         }
         
         button {
+            background: -webkit-linear-gradient(to right, #ff4757, #ff6348);
             background: linear-gradient(to right, #ff4757, #ff6348);
             color: white;
             border: none;
@@ -75,24 +80,35 @@
             border-radius: 50px;
             font-size: 16px;
             cursor: pointer;
+            -webkit-transition: all 0.3s;
             transition: all 0.3s;
+            -webkit-box-shadow: 0 4px 10px rgba(255, 71, 87, 0.4);
             box-shadow: 0 4px 10px rgba(255, 71, 87, 0.4);
             margin-top: 10px;
         }
         
         button:hover {
+            -webkit-transform: translateY(-3px);
             transform: translateY(-3px);
+            -webkit-box-shadow: 0 6px 15px rgba(255, 71, 87, 0.5);
             box-shadow: 0 6px 15px rgba(255, 71, 87, 0.5);
         }
         
         button:active {
+            -webkit-transform: translateY(0);
             transform: translateY(0);
         }
         
         .result {
             display: none;
-            margin-top: 30px;
+            -webkit-animation: fadeIn 1s;
             animation: fadeIn 1s;
+            margin-top: 30px;
+        }
+        
+        @-webkit-keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
         
         @keyframes fadeIn {
@@ -117,9 +133,11 @@
         
         .progress {
             height: 100%;
+            background: -webkit-linear-gradient(to right, #2ed573, #1e90ff);
             background: linear-gradient(to right, #2ed573, #1e90ff);
             border-radius: 10px;
             width: 0%;
+            -webkit-transition: width 1.5s ease-in-out;
             transition: width 1.5s ease-in-out;
         }
         
@@ -129,6 +147,7 @@
             color: #57606f;
             min-height: 60px;
             font-size: 1.1rem;
+            -webkit-transition: opacity 0.5s ease-in-out;
             transition: opacity 0.5s ease-in-out;
         }
         
@@ -141,6 +160,7 @@
         .fun-element {
             margin: 20px 0;
             font-size: 3rem;
+            -webkit-transition: transform 0.3s;
             transition: transform 0.3s;
         }
         
@@ -177,6 +197,7 @@
             margin-top: 30px;
             background-color: rgba(255, 255, 255, 0.9);
             border-radius: 15px;
+            -webkit-box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             width: 90%;
             max-width: 500px;
@@ -207,6 +228,7 @@
             color: #57606f;
             font-size: 1rem;
             cursor: pointer;
+            -webkit-transition: background-color 0.2s;
             transition: background-color 0.2s;
         }
 
@@ -219,6 +241,7 @@
         }
 
         .history-section button {
+            background: -webkit-linear-gradient(to right, #ff6b6b, #ee5253);
             background: linear-gradient(to right, #ff6b6b, #ee5253);
             color: white;
             border: none;
@@ -226,13 +249,38 @@
             border-radius: 25px;
             font-size: 0.9rem;
             cursor: pointer;
+            -webkit-transition: all 0.3s;
             transition: all 0.3s;
+            -webkit-box-shadow: 0 3px 8px rgba(255, 107, 107, 0.4);
             box-shadow: 0 3px 8px rgba(255, 107, 107, 0.4);
         }
 
         .history-section button:hover {
+            -webkit-transform: translateY(-2px);
             transform: translateY(-2px);
+            -webkit-box-shadow: 0 4px 10px rgba(255, 107, 107, 0.5);
             box-shadow: 0 4px 10px rgba(255, 107, 107, 0.5);
+        }
+
+        .cookie-preference {
+            margin-top: 15px;
+            margin-bottom: 15px;
+            font-size: 1rem;
+            color: #57606f;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap; /* Allow items to wrap on smaller screens */
+        }
+
+        .cookie-preference input[type="checkbox"] {
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        .cookie-preference label {
+            vertical-align: middle;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -265,66 +313,77 @@
         <ul id="searchHistoryList">
             <!-- History items will be inserted here by JavaScript -->
         </ul>
+        <div class="cookie-preference">
+            <input type="checkbox" id="disableCookiesCheckbox">
+            <label for="disableCookiesCheckbox">禁用 Cookie (不保存历史记录)</label>
+        </div>
         <button onclick="clearSearchHistory()">清空历史</button>
     </div>
 
     <script>
         const specialSettings = [
-        {
-            "inputContent": "奶龙",
-            "fixedScore": 100,
-            "specialDisplayContent": "补药给我味这种东西啊",
-            "popupContent": "口区，唐死我了！"
-        },
-        {
-            "inputContent": "金正恩",
-            "fixedScore": 0,
-            "specialDisplayContent": "将军将军\\o/",
-            "popupContent": "\\o/"
-        },
-        {
-            "inputContent": "homo",
-            "fixedScore": 114,
-            "specialDisplayContent": "逸一时，误一世",
-            "popupContent": "压力马斯内"
-        },
-        {
-            "inputContent": "Rick Astley",
-            "fixedScore": 0,
-            "specialDisplayContent": "never gonna give you up"
-        },
+            {
+                "inputContent": "奶龙",
+                "fixedScore": 100,
+                "specialDisplayContent": "补药给我味这种东西啊",
+                "popupContent": "口区，唐死我了！"
+            },
+            {
+                "inputContent": "金正恩",
+                "fixedScore": 0,
+                "specialDisplayContent": "将军将军\\o/",
+                "popupContent": "\\o/"
+            },
+            {
+                "inputContent": "homo",
+                "fixedScore": 114,
+                "specialDisplayContent": "逸一时，误一世",
+                "popupContent": "压力马斯内"
+            },
+            {
+                "inputContent": "Rick Astley",
+                "fixedScore": 0,
+                "specialDisplayContent": "never gonna give you up"
+            },
         ];
         const HISTORY_COOKIE_NAME = 'searchHistory';
         const MAX_HISTORY_ITEMS = 5;
+        const COOKIE_PREFERENCE_KEY = 'disableCookies';
+
+        let isCookieEnabled = ! (localStorage.getItem(COOKIE_PREFERENCE_KEY) === 'true');
 
         // Cookie 操作函数
         function setCookie(name, value, days) {
+            if (!isCookieEnabled) return;
             let expires = "";
             if (days) {
                 const date = new Date();
                 date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
                 expires = "; expires=" + date.toUTCString();
             }
-            document.cookie = name + "=" + (value || "") + expires + "; path=/";
+            document.cookie = name + "=" + encodeURIComponent(value || "") + expires + "; path=/; SameSite=Lax";
         }
 
         function getCookie(name) {
+            if (!isCookieEnabled) return null;
             const nameEQ = name + "=";
             const ca = document.cookie.split(';');
             for (let i = 0; i < ca.length; i++) {
                 let c = ca[i];
                 while (c.charAt(0) === ' ') c = c.substring(1, c.length);
-                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+                if (c.indexOf(nameEQ) === 0) return decodeURIComponent(c.substring(nameEQ.length, c.length));
             }
             return null;
         }
 
         function eraseCookie(name) {
-            document.cookie = name + '=; Max-Age=-99999999;';
+            if (!isCookieEnabled) return;
+            document.cookie = name + '=; Max-Age=-99999999; path=/; SameSite=Lax';
         }
 
         // 保存查询历史到 Cookie
         function saveSearchHistory(name) {
+            if (!isCookieEnabled) return;
             let history = JSON.parse(getCookie(HISTORY_COOKIE_NAME) || '[]');
             // 移除重复项，并将新项放在最前面
             history = history.filter(item => item !== name);
@@ -341,6 +400,10 @@
         function displaySearchHistory() {
             const historyList = document.getElementById('searchHistoryList');
             historyList.innerHTML = ''; // 清空现有列表
+            if (!isCookieEnabled) {
+                historyList.innerHTML = '<li>Cookie 已禁用，不显示历史记录</li>';
+                return;
+            }
             let history = JSON.parse(getCookie(HISTORY_COOKIE_NAME) || '[]');
 
             if (history.length === 0) {
@@ -365,6 +428,16 @@
             displaySearchHistory();
         }
 
+        // 切换 Cookie 使用偏好
+        function toggleCookieUsage() {
+            isCookieEnabled = !document.getElementById('disableCookiesCheckbox').checked;
+            localStorage.setItem(COOKIE_PREFERENCE_KEY, !isCookieEnabled); // 保存到 localStorage
+            if (!isCookieEnabled) {
+                eraseCookie(HISTORY_COOKIE_NAME); // 如果禁用，清空历史记录
+            }
+            displaySearchHistory(); // 更新历史记录显示
+        }
+
         // 简单哈希函数（不显示给用户）
         function simpleHash(str) {
             let hash = 0;
@@ -383,8 +456,8 @@
             return hash % 101; // 返回0-100之间的值
         }
         
-        async function analyze() {
-            // 获取输入的   字
+        function analyze() {
+            // 获取输入的名字
             const name = document.getElementById('nameInput').value.trim();
             
             // 如果没有输入名字
@@ -473,7 +546,7 @@
                             setTimeout(() => {
                                 commentElement.textContent = specialDisplayContent;
                                 commentElement.style.opacity = 1;
-                            }, 500); // 0.5秒后显   新评语
+                            }, 500); // 0.5秒后显示新评语
                         }, 500); // 0.5秒后弹窗或直接修改评语
                     } else if (score < 10) {
                         commentElement.textContent = '天哪！您简直是圣人转世，傻逼指数几乎为零！';
@@ -517,11 +590,20 @@
         });
         
         document.getElementById('nameInput').focus();
-        document.addEventListener('DOMContentLoaded', displaySearchHistory); // 页面加载时显示历史记录
+        document.addEventListener('DOMContentLoaded', () => {
+            // 初始化 Cookie 禁用复选框的状态
+            const disableCookiesCheckbox = document.getElementById('disableCookiesCheckbox');
+            if (disableCookiesCheckbox) {
+                disableCookiesCheckbox.checked = !isCookieEnabled;
+                disableCookiesCheckbox.addEventListener('change', toggleCookieUsage);
+            }
+            displaySearchHistory(); // 页面加载时显示历史记录
+        });
     </script>
     <footer class="footer">
         <p>由 <a href="#">可爱大彩兔 & Mr_Onion</a> 制作</p>
         <p><a href="https://qm.qq.com/q/ILOkszmhqK" style="font-weight: bold; color: #1e90ff;">加入官方QQ群</a></p>
     </footer>
+    <script defer="" src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon="{&quot;rayId&quot;:&quot;973a5243bd2fdd02&quot;,&quot;version&quot;:&quot;2025.8.0&quot;,&quot;r&quot;:1,&quot;token&quot;:&quot;1baba919fe1547d6a26d614087b4f72a&quot;,&quot;serverTiming&quot;:{&quot;name&quot;:{&quot;cfExtPri&quot;:true,&quot;cfEdge&quot;:true,&quot;cfOrigin&quot;:true,&quot;cfL4&quot;:true,&quot;cfSpeedBrain&quot;:true,&quot;cfCacheStatus&quot;:true}}}" crossorigin="anonymous"></script>
 </body>
 </html>
