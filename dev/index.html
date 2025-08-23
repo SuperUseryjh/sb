@@ -172,6 +172,68 @@
         .footer a:hover {
             text-decoration: underline;
         }
+
+        .history-section {
+            margin-top: 30px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 500px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .history-section h2 {
+            color: #5352ed;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        #searchHistoryList {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 15px;
+            max-height: 150px; /* Limit height for scroll */
+            overflow-y: auto; /* Enable scrolling */
+            border: 1px solid #eee;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+        }
+
+        #searchHistoryList li {
+            padding: 10px 15px;
+            border-bottom: 1px solid #eee;
+            color: #57606f;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        #searchHistoryList li:last-child {
+            border-bottom: none;
+        }
+
+        #searchHistoryList li:hover {
+            background-color: #e0e0e0;
+        }
+
+        .history-section button {
+            background: linear-gradient(to right, #ff6b6b, #ee5253);
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 3px 8px rgba(255, 107, 107, 0.4);
+        }
+
+        .history-section button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(255, 107, 107, 0.5);
+        }
     </style>
 </head>
 <body>
@@ -198,7 +260,101 @@
         <p class="disclaimer">免责声明：本分析器仅供娱乐，没有任何科学依据，请勿对号入座。</p>
     </div>
 
+    <div class="history-section">
+        <h2>查询历史</h2>
+        <ul id="searchHistoryList">
+            <!-- History items will be inserted here by JavaScript -->
+        </ul>
+        <button onclick="clearSearchHistory()">清空历史</button>
+    </div>
+
     <script>
+        let specialSettings = [];
+        const HISTORY_COOKIE_NAME = 'searchHistory';
+        const MAX_HISTORY_ITEMS = 5;
+
+        // Cookie 操作函数
+        function setCookie(name, value, days) {
+            let expires = "";
+            if (days) {
+                const date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                expires = "; expires=" + date.toUTCString();
+            }
+            document.cookie = name + "=" + (value || "") + expires + "; path=/";
+        }
+
+        function getCookie(name) {
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(';');
+            for (let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
+        }
+
+        function eraseCookie(name) {
+            document.cookie = name + '=; Max-Age=-99999999;';
+        }
+
+        // 加载特殊设置
+        async function loadSpecialSettings() {
+            try {
+                const response = await fetch('./settings.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                specialSettings = await response.json();
+            } catch (error) {
+                console.error("Failed to load special settings:", error);
+                specialSettings = []; // 加载失败时清空设置
+            }
+        }
+
+        // 保存查询历史到 Cookie
+        function saveSearchHistory(name) {
+            let history = JSON.parse(getCookie(HISTORY_COOKIE_NAME) || '[]');
+            // 移除重复项，并将新项放在最前面
+            history = history.filter(item => item !== name);
+            history.unshift(name);
+            // 限制历史记录数量
+            if (history.length > MAX_HISTORY_ITEMS) {
+                history = history.slice(0, MAX_HISTORY_ITEMS);
+            }
+            setCookie(HISTORY_COOKIE_NAME, JSON.stringify(history), 30); // 保存30天
+            displaySearchHistory(); // 更新显示
+        }
+
+        // 显示查询历史
+        function displaySearchHistory() {
+            const historyList = document.getElementById('searchHistoryList');
+            historyList.innerHTML = ''; // 清空现有列表
+            let history = JSON.parse(getCookie(HISTORY_COOKIE_NAME) || '[]');
+
+            if (history.length === 0) {
+                historyList.innerHTML = '<li>暂无历史记录</li>';
+                return;
+            }
+
+            history.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = item;
+                li.onclick = () => {
+                    document.getElementById('nameInput').value = item;
+                    analyze();
+                };
+                historyList.appendChild(li);
+            });
+        }
+
+        // 清空查询历史
+        function clearSearchHistory() {
+            eraseCookie(HISTORY_COOKIE_NAME);
+            displaySearchHistory();
+        }
+
         // 简单哈希函数（不显示给用户）
         function simpleHash(str) {
             let hash = 0;
@@ -217,7 +373,7 @@
             return hash % 101; // 返回0-100之间的值
         }
         
-        function analyze() {
+        async function analyze() {
             // 获取输入的名字
             const name = document.getElementById('nameInput').value.trim();
             
@@ -226,18 +382,29 @@
                 alert('请输入您的名字！');
                 return;
             }
+
+            saveSearchHistory(name); // 保存到历史记录
             
             // 显示结果区域
             const resultElement = document.getElementById('result');
             resultElement.style.display = 'block';
             
-            // 基于哈希值计算指数 (0-100)
             let score = getScoreFromHash(name);
+            let specialDisplayContent = null;
+            let popupContent = null;
 
-            // 特殊处理：如果名字是“奶龙”，则傻逼指   直接设为100%
-            const isNaiLong = (name === '奶龙');
-            if (isNaiLong) {
-                score = 100;
+            // 检查特殊设置
+            const matchedSetting = specialSettings.find(setting => setting.inputContent === name);
+            if (matchedSetting) {
+                if (matchedSetting.fixedScore !== undefined) {
+                    score = matchedSetting.fixedScore;
+                }
+                if (matchedSetting.specialDisplayContent) {
+                    specialDisplayContent = matchedSetting.specialDisplayContent;
+                }
+                if (matchedSetting.popupContent) {
+                    popupContent = matchedSetting.popupContent;
+                }
             }
             
             // 更新进度条
@@ -285,17 +452,19 @@
                 if (currentScore >= score) {
                     clearInterval(interval);
                     
-                    // 根据最终分数设置评语
-                    if (isNaiLong) {
+                    // 根据特殊设置或最终分数设置评语
+                    if (specialDisplayContent) {
                         setTimeout(() => {
-                            alert('口区，唐死我了！');
+                            if (popupContent) {
+                                alert(popupContent);
+                            }
                             // 动画修改评语
                             commentElement.style.opacity = 0;
                             setTimeout(() => {
-                                commentElement.textContent = '补药给我喂这种东西啊！';
+                                commentElement.textContent = specialDisplayContent;
                                 commentElement.style.opacity = 1;
                             }, 500); // 0.5秒后显示新评语
-                        }, 500); // 0.5秒后弹窗
+                        }, 500); // 0.5秒后弹窗或直接修改评语
                     } else if (score < 10) {
                         commentElement.textContent = '天哪！您简直是圣人转世，傻逼指数几乎为零！';
                     } else if (score < 20) {
@@ -337,11 +506,13 @@
             }
         });
         
-  
         document.getElementById('nameInput').focus();
+        document.addEventListener('DOMContentLoaded', displaySearchHistory); // 页面加载时  示历史记录
     </script>
     <footer class="footer">
         <p>由 <a href="#">可爱大彩兔</a> 制作</p>
+        <p>由 <a href="https://mr-onion-blog.fun">Mr_Onion</a> 二次修改</p>
+        <p>遵循 MIT 协议</p>
         <p><a href="https://qm.qq.com/q/ILOkszmhqK" style="font-weight: bold; color: #1e90ff;">加入官方QQ群</a></p>
     </footer>
 </body>
