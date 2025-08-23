@@ -257,7 +257,7 @@
             <div class="repeat-notice">✨ 提示：相同的名字总是得到相同的结果</div>
         </div>
         
-        <p class="disclaimer">免责声明：本分析器仅供娱乐，没有任何科学依据，请勿对号入座。</p>
+        <p class="disclaimer">免责声明：本分析器仅供娱乐，没有任何科学依据，请勿对号入座。不代表任何政治观点，全由算法自动生成</p>
     </div>
 
     <div class="history-section">
@@ -269,7 +269,20 @@
     </div>
 
     <script>
-        let specialSettings = [];
+        const specialSettings = [
+        {
+            "inputContent": "奶龙",
+            "fixedScore": 100,
+            "specialDisplayContent": "补药给我味这种东西啊",
+            "popupContent": "口区，唐死我了！"
+        },
+        {
+            "inputContent": "金正恩",
+            "fixedScore": 0,
+            "specialDisplayContent": "将军将军\\o/",
+            "popupContent": "\\o/"
+        }
+        ];
         const HISTORY_COOKIE_NAME = 'searchHistory';
         const MAX_HISTORY_ITEMS = 5;
 
@@ -297,20 +310,6 @@
 
         function eraseCookie(name) {
             document.cookie = name + '=; Max-Age=-99999999;';
-        }
-
-        // 加载特殊设置
-        async function loadSpecialSettings() {
-            try {
-                const response = await fetch('./settings.json');
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                specialSettings = await response.json();
-            } catch (error) {
-                console.error("Failed to load special settings:", error);
-                specialSettings = []; // 加载失败时清空设置
-            }
         }
 
         // 保存查询历史到 Cookie
@@ -374,7 +373,7 @@
         }
         
         async function analyze() {
-            // 获取输入的名字
+            // 获取输入的   字
             const name = document.getElementById('nameInput').value.trim();
             
             // 如果没有输入名字
@@ -463,7 +462,7 @@
                             setTimeout(() => {
                                 commentElement.textContent = specialDisplayContent;
                                 commentElement.style.opacity = 1;
-                            }, 500); // 0.5秒后显示新评语
+                            }, 500); // 0.5秒后显   新评语
                         }, 500); // 0.5秒后弹窗或直接修改评语
                     } else if (score < 10) {
                         commentElement.textContent = '天哪！您简直是圣人转世，傻逼指数几乎为零！';
@@ -507,12 +506,10 @@
         });
         
         document.getElementById('nameInput').focus();
-        document.addEventListener('DOMContentLoaded', displaySearchHistory); // 页面加载时  示历史记录
+        document.addEventListener('DOMContentLoaded', displaySearchHistory); // 页面加载时显示历史记录
     </script>
     <footer class="footer">
-        <p>由 <a href="#">可爱大彩兔</a> 制作</p>
-        <p>由 <a href="https://mr-onion-blog.fun">Mr_Onion</a> 二次修改</p>
-        <p>遵循 MIT 协议</p>
+        <p>由 <a href="#">可爱大彩兔 & Mr_Onion</a> 制作</p>
         <p><a href="https://qm.qq.com/q/ILOkszmhqK" style="font-weight: bold; color: #1e90ff;">加入官方QQ群</a></p>
     </footer>
 </body>
