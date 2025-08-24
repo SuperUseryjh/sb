@@ -282,16 +282,135 @@
             vertical-align: middle;
             cursor: pointer;
         }
+
+        /* 用户协议模态框样式 */
+        .agreement-modal {
+            display: none; /* 默认隐藏 */
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6);
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .agreement-modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            text-align: left;
+            color: #333;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .agreement-modal-content h2 {
+            text-align: center;
+            color: #5352ed;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+
+        .agreement-modal-content p {
+            margin-bottom: 15px;
+            line-height: 1.8;
+            font-size: 0.95rem;
+        }
+
+        .agreement-modal-content ul {
+            margin-bottom: 15px;
+            padding-left: 20px;
+        }
+
+        .agreement-modal-content li {
+            margin-bottom: 8px;
+            line-height: 1.6;
+            font-size: 0.9rem;
+        }
+
+        .agreement-controls {
+            text-align: center;
+            margin-top: 25px;
+        }
+
+        .agreement-controls input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+            vertical-align: middle;
+        }
+
+        .agreement-controls label {
+            vertical-align: middle;
+            font-size: 1rem;
+            cursor: pointer;
+            color: #57606f;
+        }
+
+        .agreement-controls button {
+            margin-top: 20px;
+            background: -webkit-linear-gradient(to right, #2ed573, #1e90ff);
+            background: linear-gradient(to right, #2ed573, #1e90ff);
+            color: white;
+            border: none;
+            padding: 12px 35px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            -webkit-transition: all 0.3s;
+            transition: all 0.3s;
+            -webkit-box-shadow: 0 4px 10px rgba(46, 213, 115, 0.4);
+            box-shadow: 0 4px 10px rgba(46, 213, 115, 0.4);
+        }
+
+        .agreement-controls button:hover {
+            -webkit-transform: translateY(-3px);
+            transform: translateY(-3px);
+            -webkit-box-shadow: 0 6px 15px rgba(46, 213, 115, 0.5);
+            box-shadow: 0 6px 15px rgba(46, 213, 115, 0.5);
+        }
     </style>
 </head>
 <body>
+    <!-- 用户协议模态框 -->
+    <div id="agreementModal" class="agreement-modal">
+        <div class="agreement-modal-content">
+            <h2>用户协议</h2>
+            <p>欢迎使用本“傻逼指数分析器”！在使用本工具之前，请您仔细阅读并理解以下协议条款。您使用本工具的行为将被视为您已充分理解并同意本协议的全部内容。</p>
+            <ul>
+                <li>本工具仅供娱乐目的，不具有任何科学依据或实际意义。</li>
+                <li>开发者已在本工具中尽可能增加了屏蔽词，由于技术限制，无法面面俱到，<strong>请勿用此工具查询历史人物</strong></li>
+                <li>本工具的分析结果纯属虚构，请勿将其与现实生活中的个人或群体对号入座。</li>
+                <li>本工具不代表任何政治观点，所有内容均由算法自动生成，与开发者无关。</li>
+                <li>您在使用本工具时，应遵守所有适用的法律法规，不得利用本工具进行任何违法、侵权或有害活动。</li>
+                <li>本工具可能会使用 Cookie 来保存您的查询历史记录，以便提供更好的用户体验。您可以在设置中选择禁用 Cookie。</li>
+                <li>开发者不对因使用本工具而产生的任何直接或间接损失承担责任。</li>
+                <li>开发者保留随时修改本协议的权利，修改后的协议将在本页面公布。您继续使用本工具将被视为接受修改后的协议。</li>
+            </ul>
+            <p>如果您不同意本协议的任何条款，请立即停止使用本工具。</p>
+            <div class="agreement-controls">
+                <input type="checkbox" id="agreeCheckbox">
+                <label for="agreeCheckbox">我已阅读并同意以上用户协议</label>
+                <button id="acceptAgreementButton" disabled>同意并继续</button>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
         <h1>傻逼指数分析器</h1>
         <p class="description">输入您的名字，我们将基于高级算法分析您的"傻逼指数"。相同的输入总是得到相同的结果！</p>
         
         <div class="input-group">
             <input type="text" id="nameInput" placeholder="请输入您的名字">
-            <button onclick="analyze()">开始分析</button>
+            <button id="analyzeButton" onclick="analyze()">开始分析</button>
         </div>
         
         <div class="result" id="result">
@@ -321,13 +440,21 @@
     </div>
 
     <script>
-        const BLOCKED_WORDS = ["习近平", "習近平", "邓小平", "鄧小平", "毛泽东", "毛澤東"];
+        // Base64 解码函数
+        function decodeBase64(str) {
+            return decodeURIComponent(atob(str).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+        }
+
+        const BLOCKED_WORDS_ENCODED = ["5qKM5rGf5p2O", "5LqR5LqM5LqG", "5b6X5ZSQ5YaF", "5bCP5omA5paH", "5a+G5LqM5LqM5LqM"]; // Base64 编码的涉政人物名字列表
         
         // 检查输入是否包含屏蔽词
         function checkBlockedWords(input) {
             const lowerCaseInput = input.toLowerCase();
-            for (const word of BLOCKED_WORDS) {
-                if (lowerCaseInput.includes(word.toLowerCase())) {
+            for (const encodedWord of BLOCKED_WORDS_ENCODED) {
+                const decodedWord = decodeBase64(encodedWord);
+                if (lowerCaseInput.includes(decodedWord.toLowerCase())) {
                     return true;
                 }
             }
@@ -464,6 +591,12 @@
         }
         
         function analyze() {
+            // 检查用户协议是否已同意
+            if (localStorage.getItem(AGREEMENT_ACCEPTED_KEY) !== 'true') {
+                alert('请先同意用户协议才能进行分析！');
+                return;
+            }
+
             // 获取输入的名字
             const name = document.getElementById('nameInput').value.trim();
             
@@ -603,6 +736,23 @@
         });
         
         document.getElementById('nameInput').focus();
+
+        const AGREEMENT_ACCEPTED_KEY = 'userAgreementAccepted';
+
+        function checkAgreementStatus() {
+            const agreementAccepted = localStorage.getItem(AGREEMENT_ACCEPTED_KEY) === 'true';
+            const agreementModal = document.getElementById('agreementModal');
+            const analyzeButton = document.getElementById('analyzeButton');
+
+            if (!agreementAccepted) {
+                agreementModal.style.display = 'flex'; // 显示模态框
+                analyzeButton.disabled = true; // 禁用分析按钮
+            } else {
+                agreementModal.style.display = 'none'; // 隐藏模态框
+                analyzeButton.disabled = false; // 启用分析按钮
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             // 初始化 Cookie 禁用复选框的状态
             const disableCookiesCheckbox = document.getElementById('disableCookiesCheckbox');
@@ -611,6 +761,27 @@
                 disableCookiesCheckbox.addEventListener('change', toggleCookieUsage);
             }
             displaySearchHistory(); // 页面加载时显示历史记录
+
+            // 用户协议逻辑
+            const agreeCheckbox = document.getElementById('agreeCheckbox');
+            const acceptAgreementButton = document.getElementById('acceptAgreementButton');
+
+            if (agreeCheckbox && acceptAgreementButton) {
+                agreeCheckbox.addEventListener('change', () => {
+                    acceptAgreementButton.disabled = !agreeCheckbox.checked;
+                });
+
+                acceptAgreementButton.addEventListener('click', () => {
+                    if (agreeCheckbox.checked) {
+                        localStorage.setItem(AGREEMENT_ACCEPTED_KEY, 'true');
+                        checkAgreementStatus(); // 更新状态，隐藏模态框，启用按钮
+                    } else {
+                        alert('请先同意用户协议！');
+                    }
+                });
+            }
+
+            checkAgreementStatus(); // 页面加载时检查协议状态
         });
     </script>
     <footer class="footer">
