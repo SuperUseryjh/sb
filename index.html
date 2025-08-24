@@ -321,6 +321,19 @@
     </div>
 
     <script>
+        const BLOCKED_WORDS = ["习近平", "邓小平", "毛泽东"];
+        
+        // 检查输入是否包含屏蔽词
+        function checkBlockedWords(input) {
+            const lowerCaseInput = input.toLowerCase();
+            for (const word of BLOCKED_WORDS) {
+                if (lowerCaseInput.includes(word.toLowerCase())) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         const specialSettings = [
             {
                 "inputContent": "奶龙",
@@ -466,6 +479,12 @@
                 return;
             }
 
+            // 检查是否包含屏蔽词
+            if (checkBlockedWords(name)) {
+                alert('您的输入包含敏感词，请重新输入！');
+                return;
+            }
+
             saveSearchHistory(name); // 保存到历史记录
             
             // 显示结果区域
@@ -507,7 +526,6 @@
             // 添加动画效果
             let currentScore = 0;
             const interval = setInterval(() => {
-                currentScore++;
                 scoreElement.textContent = currentScore + '%';
                 progressElement.style.width = currentScore + '%';
                 
@@ -579,6 +597,7 @@
                         }
                     }, 500);
                 }
+                currentScore++;
             }, 30);
         }
         
@@ -604,6 +623,5 @@
         <p>由 <a href="#">可爱大彩兔 & Mr_Onion</a> 制作</p>
         <p><a href="https://qm.qq.com/q/ILOkszmhqK" style="font-weight: bold; color: #1e90ff;">加入官方QQ群</a></p>
     </footer>
-    <script defer="" src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon="{&quot;rayId&quot;:&quot;973a5243bd2fdd02&quot;,&quot;version&quot;:&quot;2025.8.0&quot;,&quot;r&quot;:1,&quot;token&quot;:&quot;1baba919fe1547d6a26d614087b4f72a&quot;,&quot;serverTiming&quot;:{&quot;name&quot;:{&quot;cfExtPri&quot;:true,&quot;cfEdge&quot;:true,&quot;cfOrigin&quot;:true,&quot;cfL4&quot;:true,&quot;cfSpeedBrain&quot;:true,&quot;cfCacheStatus&quot;:true}}}" crossorigin="anonymous"></script>
 </body>
 </html>
