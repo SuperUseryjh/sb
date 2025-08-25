@@ -387,7 +387,6 @@
             <p>欢迎使用本“傻逼指数分析器”！在使用本工具之前，请您仔细阅读并理解以下协议条款。您使用本工具的行为将被视为您已充分理解并同意本协议的全部内容。</p>
             <ul>
                 <li>本工具仅供娱乐目的，不具有任何科学依据或实际意义。</li>
-                <li>开发者已在本工具中尽可能增加了屏蔽词，由于技术限制，无法面面俱到，<strong>请勿用此工具查询历史人物</strong></li>
                 <li>本工具的分析结果纯属虚构，请勿将其与现实生活中的个人或群体对号入座。</li>
                 <li>本工具不代表任何政治观点，所有内容均由算法自动生成，与开发者无关。</li>
                 <li>您在使用本工具时，应遵守所有适用的法律法规，不得利用本工具进行任何违法、侵权或有害活动。</li>
@@ -440,25 +439,31 @@
     </div>
 
     <script>
-        // Base64 解码函数
-        function decodeBase64(str) {
-            return decodeURIComponent(atob(str).split('').map(function(c) {
-                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-            }).join(''));
-        }
+        const API_URL = 'https://uapis.cn/api/v1/text/profanitycheck';
 
-        const BLOCKED_WORDS_ENCODED = ["5q+b5rO95Lic", "5Lmg6L+R5bmz", "5pyx5b63", "5paH5YyW5aSn6Z2p5ZG9", "6YKT5bCP5bmz", "5Y+w5rm+", "5Y+w54us", "5riv54us", "6JSh6Iux5paH", "5rGq57K+5Y2r", "6JKL5LuL55+z", "6LWW5riF5b63", "54us6KOB"];
-        
-        // 检查输入是否包含屏蔽词
-        function checkBlockedWords(input) {
-            const lowerCaseInput = input.toLowerCase();
-            for (const encodedWord of BLOCKED_WORDS_ENCODED) {
-                const decodedWord = decodeBase64(encodedWord);
-                if (lowerCaseInput.includes(decodedWord.toLowerCase())) {
-                    return true;
+        async function checkProfanityWithAPI(text) {
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: text })
+                });
+
+                if (!response.ok) {
+                    console.error('API 请求失败，状态码:', response.status);
+                    alert('敏感词检测服务暂时不可用，请稍后再试。');
+                    return false; // 视为没有违禁词，或者根据需求处理为阻止分析
                 }
+
+                const data = await response.json();
+                return data.status === 'forbidden';
+            } catch (error) {
+                console.error('敏感词检测 API 调用出错:', error);
+                alert('敏感词检测服务连接失败，请检查网络或稍后再试。');
+                return false; // 视为没有违禁词，或者根据需求处理为阻止分析
             }
-            return false;
         }
 
         const specialSettings = [
@@ -590,7 +595,7 @@
             return hash % 101; // 返回0-100之间的值
         }
         
-        function analyze() {
+        async function analyze() {
             // 检查用户协议是否已同意
             if (localStorage.getItem(AGREEMENT_ACCEPTED_KEY) !== 'true') {
                 alert('请先同意用户协议才能进行分析！');
@@ -606,8 +611,9 @@
                 return;
             }
 
-            // 检查是否包含屏蔽词
-            if (checkBlockedWords(name)) {
+            // 使用第三方API检查是否包含屏蔽词
+            const hasForbiddenWords = await checkProfanityWithAPI(name);
+            if (hasForbiddenWords) {
                 alert('您的输入包含敏感词，请重新输入！');
                 return;
             }
